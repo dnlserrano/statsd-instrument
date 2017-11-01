@@ -56,14 +56,20 @@ module StatsD
       metric_name.respond_to?(:call) ? metric_name.call(callee, args).gsub('::', '.') : metric_name.gsub('::', '.')
     end
 
+    def self.duration
+      start = current_timestamp
+      yield
+      current_timestamp - start
+    end
+
     if Process.respond_to?(:clock_gettime)
       # @private
-      def self.gettime
+      def self.current_timestamp
         Process.clock_gettime(Process::CLOCK_MONOTONIC)
       end
     else
       # @private
-      def self.gettime
+      def self.current_timestamp
         Time.now
       end
     end
@@ -281,11 +287,11 @@ module StatsD
 
     if block_given?
       result = nil
-      start = StatsD::Instrument.gettime
+      start = StatsD::Instrument.current_timestamp
       begin
         result = yield
       ensure
-        value = 1000 * StatsD::Instrument.gettime - start
+        value = 1000 * StatsD::Instrument.current_timestamp - start
         collect_metric(hash_argument(metric_options).merge(type: :ms, name: key, value: value))
         result
       end

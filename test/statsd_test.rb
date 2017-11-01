@@ -36,7 +36,7 @@ class StatsDTest < Minitest::Test
   end
 
   def test_statsd_measure_with_benchmarked_block_duration
-    StatsD::Instrument.stubs(:gettime).returns(0, 1.12)
+    StatsD::Instrument.stubs(:current_timestamp).returns(0, 1.12)
     metric = capture_statsd_call do
       StatsD.measure('values.foobar') { 'foo' }
     end
@@ -44,7 +44,7 @@ class StatsDTest < Minitest::Test
   end
 
   def test_statsd_measure_with_benchmarked_block_duration_even_when_it_raises
-    StatsD::Instrument.stubs(:gettime).returns(0, 1.12)
+    StatsD::Instrument.stubs(:current_timestamp).returns(0, 1.12)
     metric = capture_statsd_call do
       exception = "boom!"
       assert_raises(exception) do
